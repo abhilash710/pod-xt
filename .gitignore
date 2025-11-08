@@ -2,6 +2,8 @@
 .venv/
 .direnv/
 .env
+.env.*   # Ignore all env files
+!.env.example
 
 # Python artifacts
 __pycache__/

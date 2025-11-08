@@ -40,7 +40,7 @@ def apply_podcast_config(
 
     Args:
         show_name: Name of the podcast show
-        current_flags: Current pipeline flags (align, diarize, deepcast, etc.)
+        current_flags: Current pipeline flags (diarize, deepcast, etc.)
         deepcast_model: Current deepcast model
         deepcast_temp: Current deepcast temperature
         notion: Whether Notion upload is enabled
@@ -81,9 +81,6 @@ def apply_podcast_config(
 
         # Apply YAML pipeline defaults
         if yaml_config.pipeline:
-            if not updated_flags.get("align") and yaml_config.pipeline.align:
-                updated_flags["align"] = True
-                logger.info("Applied YAML config: align = True")
             if not updated_flags.get("diarize") and yaml_config.pipeline.diarize:
                 updated_flags["diarize"] = True
                 logger.info("Applied YAML config: diarize = True")
@@ -156,9 +153,6 @@ def apply_podcast_config(
         # Apply JSON defaults (original logic)
         config_flags = json_config.default_flags
 
-        if not updated_flags.get("align") and config_flags.get("align", False):
-            updated_flags["align"] = True
-            logger.info("Applied JSON config: align = True")
         if not updated_flags.get("diarize") and config_flags.get("diarize", False):
             updated_flags["diarize"] = True
             logger.info("Applied JSON config: diarize = True")

@@ -362,7 +362,6 @@ def _execute_fetch(
 
     # Current flags to potentially override
     current_flags = {
-        "align": config["align"],
         "diarize": config["diarize"],
         "deepcast": config["deepcast"],
         "extract_markdown": config["extract_markdown"],
@@ -379,7 +378,6 @@ def _execute_fetch(
     )
 
     # Update config with podcast-specific overrides
-    config["align"] = config_result.flags["align"]
     config["diarize"] = config_result.flags["diarize"]
     config["deepcast"] = config_result.flags["deepcast"]
     config["extract_markdown"] = config_result.flags["extract_markdown"]
@@ -517,7 +515,6 @@ def _execute_transcribe(
 def _execute_enhancement(
     preprocess: bool,
     restore: bool,
-    align: bool,
     diarize: bool,
     model: str,
     latest: dict,
@@ -526,7 +523,7 @@ def _execute_enhancement(
     progress,
     verbose: bool,
 ) -> tuple[dict, str]:
-    """Execute transcript enhancement pipeline (preprocess, align, diarize).
+    """Execute transcript enhancement pipeline (preprocess, diarize).
 
     Processes transcripts through optional enhancement steps, updating the
     latest transcript and its name as each step completes.
@@ -534,8 +531,7 @@ def _execute_enhancement(
     Args:
         preprocess: Enable transcript preprocessing
         restore: Enable semantic restore in preprocessing
-        align: Enable word-level alignment (WhisperX)
-        diarize: Enable speaker diarization
+        diarize: Enable speaker diarization (includes word-level alignment)
         model: ASR model name (for file naming)
         latest: Latest transcript dict (input)
         latest_name: Latest transcript filename without extension (input)
@@ -989,7 +985,6 @@ def _print_results_summary(
 
 
 def _display_pipeline_config(
-    align: bool,
     diarize: bool,
     deepcast: bool,
     notion: bool,
@@ -1005,8 +1000,7 @@ def _display_pipeline_config(
     configuration, and displays it to the user.
 
     Args:
-        align: Whether alignment is enabled
-        diarize: Whether diarization is enabled
+        diarize: Whether diarization is enabled (includes word-level alignment)
         deepcast: Whether deepcast analysis is enabled
         notion: Whether Notion upload is enabled
         show: Podcast show name
@@ -1021,8 +1015,6 @@ def _display_pipeline_config(
     from .progress import print_podx_info
 
     steps = ["fetch", "transcode", "transcribe"]
-    if align:
-        steps.append("align")
     if diarize:
         steps.append("diarize")
     if deepcast:
@@ -1315,8 +1307,6 @@ def _handle_interactive_mode(config: Dict[str, Any], scan_dir: Path, console: An
 
     # 7. Pipeline preview
     stages = ["fetch", "transcode", "transcribe"]
-    if config["align"]:
-        stages.append("align")
     if config["diarize"]:
         stages.append("diarize")
     if config["preprocess"]:
@@ -1336,7 +1326,7 @@ def _handle_interactive_mode(config: Dict[str, Any], scan_dir: Path, console: An
     preview = (
         f"Pipeline: {' → '.join(stages)}\n"
         f"ASR={config['model']} "
-        f"align={yn(config['align'])} diarize={yn(config['diarize'])} "
+        f"diarize={yn(config['diarize'])} "
         f"preprocess={yn(config['preprocess'])} restore={yn(config['restore'])}\n"
         f"AI={config['deepcast_model']} type={chosen_type or '-'} outputs={','.join(outputs) or '-'}"
     )
@@ -1688,7 +1678,6 @@ def run(
 
         # Show pipeline configuration (after YAML/JSON config is applied)
         steps = _display_pipeline_config(
-            align=config["align"],
             diarize=config["diarize"],
             deepcast=config["deepcast"],
             notion=config["notion"],
@@ -1762,7 +1751,6 @@ def run(
         latest, latest_name = _execute_enhancement(
             preprocess=config["preprocess"],
             restore=config["restore"],
-            align=config["align"],
             diarize=config["diarize"],
             model=config["model"],
             latest=latest,

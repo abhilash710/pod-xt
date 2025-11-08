@@ -236,7 +236,7 @@ class YamlConfigManager:
         """Get configuration for a specific podcast."""
         config = self.load_config()
 
-        if not config.podcasts:
+        if not config or not config.podcasts:
             return None
 
         # Direct key match
