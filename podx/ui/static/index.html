@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PodX Studio</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #2563eb;
+            margin-bottom: 10px;
+        }
+        
+        .card {
+            background: white;
+            padding: 24px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        
+        .form-group {
+            margin-bottom: 16px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+        
+        input[type="text"], select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        button {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        button:hover {
+            background: #1d4ed8;
+        }
+        
+        button:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+        }
+        
+        .btn-secondary {
+            background: #6b7280;
+        }
+        
+        .btn-secondary:hover {
+            background: #4b5563;
+        }
+        
+        .progress-panel {
+            margin-top: 20px;
+        }
+        
+        .stage {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            margin-bottom: 8px;
+            background: #f9fafb;
+            border-radius: 4px;
+        }
+        
+        .stage-status {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            margin-right: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .status-pending {
+            background: #e5e7eb;
+        }
+        
+        .status-running {
+            background: #3b82f6;
+            animation: pulse 2s infinite;
+        }
+        
+        .status-completed {
+            background: #10b981;
+            color: white;
+        }
+        
+        .status-failed {
+            background: #ef4444;
+            color: white;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .error-panel {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            color: #991b1b;
+            padding: 16px;
+            border-radius: 4px;
+            margin-top: 20px;
+        }
+        
+        .success-panel {
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            color: #166534;
+            padding: 16px;
+            border-radius: 4px;
+            margin-top: 20px;
+        }
+        
+        .advanced-toggle {
+            margin-top: 16px;
+            cursor: pointer;
+            color: #2563eb;
+            text-decoration: underline;
+        }
+        
+        .advanced-options {
+            margin-top: 16px;
+            padding: 16px;
+            background: #f9fafb;
+            border-radius: 4px;
+            display: none;
+        }
+        
+        .advanced-options.show {
+            display: block;
+        }
+        
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        
+        .checkbox-group input[type="checkbox"] {
+            width: auto;
+            margin-right: 8px;
+        }
+        
+        .history-item {
+            padding: 12px;
+            border-bottom: 1px solid #e5e7eb;
+            cursor: pointer;
+        }
+        
+        .history-item:hover {
+            background: #f9fafb;
+        }
+        
+        .history-item:last-child {
+            border-bottom: none;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+            margin-left: 8px;
+        }
+        
+        .badge-completed {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        
+        .badge-failed {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        
+        .badge-running {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+        
+        .badge-canceled {
+            background: #f3f4f6;
+            color: #374151;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>PodX Studio</h1>
+            <p>Process podcasts with ease</p>
+        </header>
+        
+        <div id="app">
+            <div class="card">
+                <h2>Start New Run</h2>
+                <form id="run-form">
+                    <div class="form-group">
+                        <label for="url">Podcast URL</label>
+                        <input type="text" id="url" placeholder="Paste RSS feed, YouTube URL, or podcast page URL" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="preset">Preset</label>
+                        <select id="preset">
+                            <option value="">Loading...</option>
+                        </select>
+                    </div>
+                    
+                    <div class="advanced-toggle" onclick="toggleAdvanced()">
+                        Advanced Options
+                    </div>
+                    
+                    <div class="advanced-options" id="advanced-options">
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="diarize" checked>
+                            <label for="diarize">Diarize (Speaker Identification)</label>
+                        </div>
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="deepcast" checked>
+                            <label for="deepcast">AI Analysis (Deepcast)</label>
+                        </div>
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="preprocess" checked>
+                            <label for="preprocess">Preprocess Transcript</label>
+                        </div>
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="extract_markdown" checked>
+                            <label for="extract_markdown">Extract Markdown</label>
+                        </div>
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="notion">
+                            <label for="notion">Upload to Notion</label>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" id="run-button">Run</button>
+                </form>
+            </div>
+            
+            <div id="progress-panel" class="card progress-panel" style="display: none;">
+                <h2>Progress</h2>
+                <div id="stages"></div>
+                <button id="cancel-button" class="btn-secondary" style="margin-top: 16px;">Cancel</button>
+            </div>
+            
+            <div id="result-panel" class="card" style="display: none;">
+                <h2>Results</h2>
+                <div id="result-content"></div>
+            </div>
+            
+            <div class="card">
+                <h2>Recent Runs</h2>
+                <div id="history"></div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const API_BASE = '';
+        let currentRunId = null;
+        let ws = null;
+        
+        // Load presets on page load
+        async function loadPresets() {
+            try {
+                const res = await fetch(`${API_BASE}/api/presets`);
+                const presets = await res.json();
+                const select = document.getElementById('preset');
+                select.innerHTML = '<option value="">Recommended (Default)</option>';
+                presets.forEach(p => {
+                    const option = document.createElement('option');
+                    option.value = p.name;
+                    option.textContent = p.name;
+                    select.appendChild(option);
+                });
+            } catch (e) {
+                console.error('Failed to load presets', e);
+            }
+        }
+        
+        // Load history
+        async function loadHistory() {
+            try {
+                const res = await fetch(`${API_BASE}/api/runs`);
+                const runs = await res.json();
+                const historyDiv = document.getElementById('history');
+                if (runs.length === 0) {
+                    historyDiv.innerHTML = '<p>No recent runs</p>';
+                    return;
+                }
+                historyDiv.innerHTML = runs.map(run => `
+                    <div class="history-item" onclick="viewRun('${run.run_id}')">
+                        <strong>${run.run_id.substring(0, 8)}...</strong>
+                        <span class="status-badge badge-${run.status}">${run.status}</span>
+                        <div style="font-size: 12px; color: #6b7280; margin-top: 4px;">
+                            ${new Date(run.started_at).toLocaleString()}
+                        </div>
+                    </div>
+                `).join('');
+            } catch (e) {
+                console.error('Failed to load history', e);
+            }
+        }
+        
+        // Toggle advanced options
+        function toggleAdvanced() {
+            const options = document.getElementById('advanced-options');
+            options.classList.toggle('show');
+        }
+        
+        // Start run
+        document.getElementById('run-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const url = document.getElementById('url').value;
+            const preset = document.getElementById('preset').value || null;
+            const advanced = {
+                diarize: document.getElementById('diarize').checked,
+                deepcast: document.getElementById('deepcast').checked,
+                preprocess: document.getElementById('preprocess').checked,
+                extract_markdown: document.getElementById('extract_markdown').checked,
+                notion: document.getElementById('notion').checked,
+            };
+            
+            try {
+                const res = await fetch(`${API_BASE}/api/runs`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({url, preset, advanced})
+                });
+                
+                if (!res.ok) {
+                    const error = await res.json();
+                    alert(`Error: ${error.detail}`);
+                    return;
+                }
+                
+                const data = await res.json();
+                currentRunId = data.run_id;
+                
+                // Show progress panel
+                document.getElementById('progress-panel').style.display = 'block';
+                document.getElementById('result-panel').style.display = 'none';
+                
+                // Connect WebSocket
+                connectWebSocket(currentRunId);
+                
+                // Start polling for updates
+                pollRunStatus(currentRunId);
+            } catch (e) {
+                alert(`Failed to start run: ${e.message}`);
+            }
+        });
+        
+        // Connect WebSocket
+        function connectWebSocket(runId) {
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsUrl = `${protocol}//${window.location.host}/ws/${runId}`;
+            ws = new WebSocket(wsUrl);
+            
+            ws.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                updateProgress(data.progress);
+            };
+            
+            ws.onerror = (error) => {
+                console.error('WebSocket error', error);
+            };
+            
+            ws.onclose = () => {
+                // Reconnect after delay
+                setTimeout(() => {
+                    if (currentRunId === runId) {
+                        connectWebSocket(runId);
+                    }
+                }, 1000);
+            };
+        }
+        
+        // Update progress display
+        function updateProgress(progress) {
+            const stages = ['fetch', 'transcode', 'transcribe', 'preprocess', 'diarize', 'deepcast', 'export', 'notion'];
+            const stagesDiv = document.getElementById('stages');
+            stagesDiv.innerHTML = stages.map(stage => {
+                const status = progress[stage] || 'pending';
+                return `
+                    <div class="stage">
+                        <div class="stage-status status-${status}">
+                            ${status === 'completed' ? '✓' : status === 'failed' ? '✗' : ''}
+                        </div>
+                        <div>
+                            <strong>${stage.charAt(0).toUpperCase() + stage.slice(1)}</strong>
+                            <span style="color: #6b7280; margin-left: 8px;">${status}</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        // Poll run status
+        async function pollRunStatus(runId) {
+            const interval = setInterval(async () => {
+                try {
+                    const res = await fetch(`${API_BASE}/api/runs/${runId}`);
+                    const run = await res.json();
+                    
+                    if (run.status === 'completed') {
+                        clearInterval(interval);
+                        showResults(run);
+                    } else if (run.status === 'failed' || run.status === 'canceled') {
+                        clearInterval(interval);
+                        showError(run);
+                    }
+                } catch (e) {
+                    console.error('Failed to poll run status', e);
+                }
+            }, 1000);
+        }
+        
+        // Show results
+        function showResults(run) {
+            document.getElementById('progress-panel').style.display = 'none';
+            document.getElementById('result-panel').style.display = 'block';
+            
+            const content = document.getElementById('result-content');
+            content.innerHTML = `
+                <div class="success-panel">
+                    <h3>Pipeline completed successfully!</h3>
+                    <p>All stages completed.</p>
+                    ${run.notion_url ? `<a href="${run.notion_url}" target="_blank">View in Notion</a>` : ''}
+                </div>
+            `;
+            
+            loadHistory();
+        }
+        
+        // Show error
+        function showError(run) {
+            document.getElementById('progress-panel').style.display = 'none';
+            document.getElementById('result-panel').style.display = 'block';
+            
+            const content = document.getElementById('result-content');
+            content.innerHTML = `
+                <div class="error-panel">
+                    <h3>Pipeline failed</h3>
+                    <p>${run.error || 'Unknown error'}</p>
+                </div>
+            `;
+            
+            loadHistory();
+        }
+        
+        // Cancel run
+        document.getElementById('cancel-button').addEventListener('click', async () => {
+            if (!currentRunId) return;
+            
+            try {
+                await fetch(`${API_BASE}/api/runs/${currentRunId}/cancel`, {method: 'POST'});
+                alert('Run canceled');
+                document.getElementById('progress-panel').style.display = 'none';
+                loadHistory();
+            } catch (e) {
+                alert(`Failed to cancel: ${e.message}`);
+            }
+        });
+        
+        // View run
+        function viewRun(runId) {
+            // Could implement detailed view here
+            console.log('View run', runId);
+        }
+        
+        // Initialize
+        loadPresets();
+        loadHistory();
+    </script>
+</body>
+</html>
+

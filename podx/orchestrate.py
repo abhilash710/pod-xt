@@ -2912,5 +2912,61 @@ def plugin_types():
     console.print(table)
 
 
+@main.command("ui", help="Start PodX Studio web UI.")
+@click.option(
+    "--port",
+    type=int,
+    default=None,
+    help="Port to run server on (defaults to PODX_UI_PORT or 8000)",
+)
+@click.option(
+    "--no-browser",
+    is_flag=True,
+    help="Don't open browser automatically",
+)
+def ui_command(port: Optional[int], no_browser: bool):
+    """Start PodX Studio web UI.
+    
+    This command starts a local web server that provides a browser-based
+    interface for running PodX pipelines. The UI is accessible at
+    http://localhost:8000 (or the configured port).
+    
+    The UI feature must be enabled via PODX_UI_ENABLED environment variable
+    or config setting.
+    """
+    config = get_config()
+    
+    if not config.ui_enabled:
+        click.secho(
+            "Error: PodX Studio UI is not enabled.",
+            fg="red",
+        )
+        click.echo(
+            "\nTo enable the UI, set PODX_UI_ENABLED=true environment variable:\n"
+            "  export PODX_UI_ENABLED=true\n"
+            "  podx ui\n"
+        )
+        raise SystemExit(1)
+    
+    try:
+        from .ui.server import start_server
+        
+        click.echo("Starting PodX Studio...")
+        start_server(port=port, open_browser=not no_browser)
+    except ImportError as e:
+        click.secho(
+            f"Error: Failed to import UI server: {e}",
+            fg="red",
+        )
+        click.echo(
+            "\nMake sure all dependencies are installed:\n"
+            "  pip install fastapi uvicorn websockets\n"
+        )
+        raise SystemExit(1)
+    except Exception as e:
+        click.secho(f"Error: Failed to start UI server: {e}", fg="red")
+        raise SystemExit(1)
+
+
 if __name__ == "__main__":
     main()

@@ -50,6 +50,10 @@ class PodxConfig(BaseSettings):
     log_level: str = Field(default="INFO", env="PODX_LOG_LEVEL")
     log_format: str = Field(default="console", env="PODX_LOG_FORMAT")  # console, json
 
+    # UI Configuration
+    ui_enabled: bool = Field(default=True, env="PODX_UI_ENABLED")
+    ui_port: int = Field(default=8000, env="PODX_UI_PORT")
+
     @validator("openai_temperature")
     def validate_temperature(cls, v):
         if not 0.0 <= v <= 2.0:
